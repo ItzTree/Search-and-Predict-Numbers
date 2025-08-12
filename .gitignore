@@ -1,0 +1,6 @@
+# .gitignore
+
+# Data and Image files
+data/
+images/
+plots/
