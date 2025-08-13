@@ -26,4 +26,7 @@ The project is organized into several key directories and files, each with a spe
 - **plots/** : This directory holds all the visual outputs from the analysis phase. Generated graphs, including distribution plots and trend charts, are saved here as image files.
 - **utils/** : A package containing all the core logic of the project, broken down into modular Python Scripts:
   - \_\_init__.py : An empty file that allows the `utils` dictory to be treated as a Python package.
-  - image_scraper.py : 
+  - image_scraper.py : Contains the `scrape_images` function, responsible for connecting to a target URL, finding all relevant images, and downloading them into the `images/` directory.
+  - extract_num_from_image.py : The core OCR engine.It contains the `extract_num_from_img` function, which takes a single image path as input and returns a list of all numbers found within it.
+  - extract_csv.py : Responsible for managing the data pipeline. It uses the OCR module to process all images belonging to a specific group and saves the cleaned, filtered results into a corresponding `.csv` file in the `data/` directory.
+  - analyze_data.py : The final analysis engine. This script reads the `.csv` file from the `data/` directory, performs statistical analysis based on the 7-day cycle, visualizes the results, and generates a final report with number recommendations.
