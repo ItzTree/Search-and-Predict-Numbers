@@ -4,30 +4,7 @@ import pandas as pd
 from .extract_num_from_image import extract_num_from_img
 
 def filter_outliers(num_list):
-    if not num_list or len(num_list) < 2:
-        return num_list
-
-    # The first number is always considered valid
-    filtered_list = [num_list[0]]
-    valid_number = num_list[0]
-    filtered_count = 0
-
-    # Check all numbers if number is valid
-    for i in range(1, len(num_list)):
-        current_number = num_list[i]
-
-        if current_number >= valid_number:
-            if current_number >= 40000:
-                filtered_count += 1
-                continue
-            filtered_list.append(current_number)
-            valid_number = current_number
-        else:
-            filtered_count += 1
-    
-    if filtered_count:
-        print(f"Info: A total of {filtered_count} outliers were removed from the list.")
-    return filtered_list
+    return num_list
 
 
 '''

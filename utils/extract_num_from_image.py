@@ -65,27 +65,51 @@ def extract_num_from_img(image_path):
         
         # Preprocessing
         gray_roi = cv2.cvtColor(resized_roi, cv2.COLOR_BGR2GRAY)
-        blurred_roi = cv2.medianBlur(gray_roi, 3)
-        _, thresh_roi = cv2.threshold(blurred_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
+        blackhat = cv2.morphologyEx(gray_roi, cv2.MORPH_BLACKHAT, kernel)
+        _, thresh_blackhat = cv2.threshold(blackhat, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        thresh_roi = cv2.bitwise_not(thresh_blackhat)
+
+        # blurred_roi = cv2.medianBlur(gray_roi, 3)
+        # _, thresh_roi = cv2.threshold(blurred_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         cleaned_number = ""
         custom_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789'
 
         # Detect most numbers
-        kernel_v1 = np.ones((3, 3), np.uint8)
-        thinned_roi_v1 = cv2.dilate(thresh_roi, kernel_v1, iterations=1)
-        number_text_v1 = pytesseract.image_to_string(thinned_roi_v1, config=custom_config)
+        text1 = pytesseract.image_to_string(thresh_roi, config=custom_config).strip()
 
-        if number_text_v1.strip().isdigit():
-            cleaned_number = number_text_v1.strip()
+        if text1.isdigit():
+            cleaned_number = text1
         else:
-            # Detect other numbers to using cross kernel
-            kernel_v2 = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
-            thinned_roi_v2 = cv2.dilate(thresh_roi, kernel_v2, iterations=1)
-            number_text_v2 = pytesseract.image_to_string(thinned_roi_v2, config=custom_config)
+            # Try using square dilation
+            kernel_v1 = np.ones((3, 3), np.uint8)
+            thinned_roi_v1 = cv2.dilate(thresh_roi, kernel_v1, iterations=1)
+            text2 = pytesseract.image_to_string(thinned_roi_v1, config=custom_config).strip()
+            if text2.isdigit():
+                cleaned_number = text2
+            else:
+                # Try using Cross dilation
+                kernel_v2 = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+                thinned_roi_v2 = cv2.dilate(thresh_roi, kernel_v2,iterations=1)
+                text3 = pytesseract.image_to_string(thinned_roi_v2, config=custom_config).strip()
+                if text3.isdigit():
+                    cleaned_number = text3
 
-            if number_text_v2.strip().isdigit():
-                cleaned_number = number_text_v2.strip()
+        # kernel_v1 = np.ones((3, 3), np.uint8)
+        # thinned_roi_v1 = cv2.dilate(thresh_roi, kernel_v1, iterations=1)
+        # number_text_v1 = pytesseract.image_to_string(thinned_roi_v1, config=custom_config)
+
+        # if number_text_v1.strip().isdigit():
+        #     cleaned_number = number_text_v1.strip()
+        # else:
+        #     # Detect other numbers to using cross kernel
+        #     kernel_v2 = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+        #     thinned_roi_v2 = cv2.dilate(thresh_roi, kernel_v2, iterations=1)
+        #     number_text_v2 = pytesseract.image_to_string(thinned_roi_v2, config=custom_config)
+
+        #     if number_text_v2.strip().isdigit():
+        #         cleaned_number = number_text_v2.strip()
 
         if cleaned_number:
             try:
